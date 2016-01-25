@@ -16,6 +16,10 @@ Ultimately, we aim to generate a user community around UManSysProp. As we develo
 <br />
 [Topping, D., Barley, M. H., Bane, M., Higham, N., Aumont, B., and McFiggans, G.: UManSysProp: an online facility for molecular property prediction and atmospheric aerosol calculations, Geosci. Model Dev. Discuss., 8, 9669-9706, doi:10.5194/gmdd-8-9669-2015, 2015.](http://www.geosci-model-dev-discuss.net/gmd-2015-197/)
 <br />
+Code DOI [![DOI](https://zenodo.org/badge/20123/loftytopping/UManSysProp_public.svg)](https://zenodo.org/badge/latestdoi/20123/loftytopping/UManSysProp_public)
+
+
+
 In addition, if you would like any particular technique added to this facility then get in touch and we can discuss.
 
 For up to date information, including paper and training alerts, please check our website:http://umansysprop.seaes.manchester.ac.uk/ . You can also follow us on twitter @UManSysProp

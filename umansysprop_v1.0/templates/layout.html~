@@ -1,0 +1,68 @@
+<!doctype html>
+<html class="no-js" lang="en">
+  <head>
+    {% block head %}
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} - UManSysProp</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='foundation5/css/foundation.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}" />
+    <link href='http://fonts.googleapis.com/css?family=Nunito' rel='stylesheet' type='text/css'>
+    <script src="{{ url_for('static', filename='foundation5/js/vendor/modernizr.js') }}"></script>
+    {% endblock %}
+  </head>
+  <body>
+
+    <header>
+      {% block header %}
+      <div class="row">
+        <div class="small-12 columns">
+          <img src="{{ url_for('static', filename='logo.png') }}" style="opacity:0.3" class="show-for-small-only" height="250" />
+          <img src="{{ url_for('static', filename='logo.png') }}" style="opacity:0.7" class="show-for-medium-up" height="250" />
+        </div>
+      </div>
+      <div class="row">
+        <div class="large-6 medium-4 columns">
+          <a href="{{ url_for('template', name='index') }}"><h1>UManSysProp</h1></a>
+          <h5>Multiphase system online property prediction</h5>
+        </div>
+      </div>
+      {% endblock %}
+    </header>
+
+    <div id="content">
+      {% block content %}
+      <div class="row">
+        <div class="small-12 columns">
+          <h2>{{ title }}</h2>
+        </div>
+      </div>
+      {% endblock %}
+    </div>
+
+    <footer>
+      {% block footer %}
+      <div class="row">
+        <div class="small-12 columns">
+          <p>Copyright &copy; 2014 <a href="mailto:dave@waveform.org.uk">Dave
+          Jones</a>. Published under the terms of the <a
+          href="http://www.gnu.org/licenses/gpl-2.0.html">GNU GPL v2</a> or (at
+          your option) any later version. Source code is available from <a
+          href="https://github.com/waveform80/umansysprop">GitHub</a>,
+          documentation is available from <a
+          href="https://umansysprop.readthedocs.org/">ReadTheDocs</a>.The source code for the predictions covered on this site
+          is not available. For more information on its use, please contact <a href="mailto:david.topping@manchester.ac.uk">Dr David Topping</a></p>
+        </div>
+      </div>
+      {% endblock %}
+    </footer>
+
+    {% block scripts %}
+    <script src="{{ url_for('static', filename='foundation5/js/vendor/jquery.js') }}"></script>
+    <script src="{{ url_for('static', filename='foundation5/js/foundation.min.js') }}"></script>
+    <script>
+      $(document).foundation();
+    </script>
+    {% endblock %}
+  </body>
+</html>

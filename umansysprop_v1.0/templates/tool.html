@@ -1,0 +1,56 @@
+{% extends "layout.html" %}
+
+{% macro render_field(field) %}
+{% if field.errors %}
+    {% set css_class = 'error' + kwargs.pop('class', '') %}
+    {{ field.label(class=css_class) }}
+    {{ field(class=css_class, **kwargs) }}
+    <small class="error">
+        {% if field.errors is mapping %}
+        {% for name, errors in field.errors.items() %}
+        {{ name }}: {{ errors|join(', ') }}<br />
+        {% endfor %}
+        {% else %}
+        {{ field.errors|join(', ') }}
+        {% endif %}
+    </small>
+{% else %}
+    {{ field.label() }}
+    {{ field(**kwargs) }}
+{% endif %}
+{% endmacro %}
+
+{% block content %}
+{{ super() }}
+<form method="POST" enctype="multipart/form-data">
+  {% block form %}
+  {{ form.hidden_tag() }}
+  {% for field in form %}
+  {% if field.name != 'output_format' %}
+  <div class="row">
+    <div class="small-12 columns">
+      {{ render_field(field) }}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+  {% endblock %}
+  <div class="row">
+    <div class="medium-6 columns">
+      {{ render_field(form.output_format) }}
+    </div>
+    <div class="medium-6 columns medium-text-right">
+      <input style="margin-top: 8px" class="button small radius" type="submit" name="submit" value="Calculate" />
+    </div>
+  </div>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% for field in form %}
+{% if field.scripts is defined %}
+{{ field.scripts }}
+{% endif %}
+{% endfor %}
+{% endblock %}

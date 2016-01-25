@@ -1,0 +1,197 @@
+{% set title = 'JSON API Documentation' %}
+{% extends "layout.html" %}
+{% block content %}
+{{ super() }}
+<div class="row">
+  <div class="small-12 columns">
+    <p>The UManSysProp functions are also accessible via a simple REST API.  A
+    client library for Python is provided which permits simple access to the
+    functions in an idiomatic Python form. The functions available to call via
+    the API are detailed in the table below. Click on a function name to view
+    documentation for that particular function:</p>
+
+    <table>
+        <thead>
+            <tr><th>Name</th><th>URL</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+            {% for tool_name, tool in tools.items()|sort %}
+            <tr>
+                <td>{{ tool_name }}</td>
+                <td>
+                    <a href="{{ url_for('api_docs', name=tool_name) }}">
+                        {{ url_for('call', name=tool_name) }}
+                    </a>
+                </td>
+                <td>{{ tool.__doc__ }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <p>For programmatic use you can also query this page with the HTTP
+    request's <code>Accept</code> header set to <code>application/json</code>
+    in which case the response will contain the function details in a JSON
+    object.</p>
+    <!-- XXX expand this -->
+
+    <h2>RPC Details</h2>
+
+    <h3>Requests</h3>
+
+    <p>Each function is associated with a URL; HTTP POST requests can be made
+    to this URL with named parameter values encoded as JSON in the HTTP request
+    body. The request body will be expected to contain a single JSON object
+    which has attributes named after the parameters of the method being
+    called.</p>
+
+    <p>For example, if the method accepts the parameters
+    <code>temperatures</code> (a list of floating point values representing
+    temperatures between 0 and 100 degress Celsius), <code>scale1</code> and
+    <code>scale2</code> (two values to multiply by the temperatures), and
+    <code>compounds</code> (a list of chemical compounds represented as SMILES
+    strings), the body of the HTTP request could contain the following JSON
+    object:</p>
+
+    <pre><code>{
+        "compounds": ["CCCC", "CO", "C(=O)(C(=O)O)O"],
+        "temperatures": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+        "scale2": 14,
+        "scale1": 2,
+        }</code></pre>
+
+    <p>Indentation, spacing, and order of parameters is irrelevant in the JSON
+    representation.</p>
+
+    <p>Finally, the HTTP request's <code>Accept</code> header must be set to
+    <code>application/json</code> (preferentially) to indicate that HTML should
+    not be returned. The following is an example of a complete HTTP request
+    for the <code>vapour_pressure</code> method:</p>
+
+    <pre><code>POST http://umansysprop.seaes.manchester.ac.uk/api/vapour_pressure
+Content-Length: 125
+Accept-Encoding: gzip, deflate
+Accept: application/json
+User-Agent: python-requests/2.4.1 CPython/2.7.6 Linux/3.13.0-48-generic
+Connection: keep-alive
+Content-Type: application/json
+
+{"vp_method": "nannoolal", "bp_method": "nannoolal", "temperatures": [295.15, 305.15, 315.15, 325.15], "compounds": ["CCCC"]}</code></pre>
+
+    <h3>Responses</h3>
+
+    <p>Assuming the parameter values are acceptable for the utility called, the
+    results will be returned as a JSON object in the HTTP response. The
+    resulting JSON object will be an array, each element of which represents a
+    result table.</p>
+
+    <p>Each result table in the resulting list will be a JSON object with the
+    following properties:</p>
+
+    <ul>
+      <li><code>name</code> - The identifier of the table. This is a value
+      intended for use as an identifier in programming languages. As such it
+      will start with an ASCII alphabetic character, and all subsequent
+      characters will be an ASCII alphanumeric character or underscore.</li>
+
+      <li><code>title</code> - A short human readable description of the
+      table's content. This is typically rendered as a table caption.</li>
+
+      <li><code>rows_title</code> - A string or an array of strings
+      representing the title of each row dimension. If there is a single row
+      dimension, this can be a string or an array of 1 string. If there are
+      more than one row dimensions, this must be an array of <em>n</em> strings
+      where <em>n</em> is the number of row dimensions.</li>
+
+      <li><code>cols_title</code> - A string or an array of strings
+      representing the title of each column dimension. This shares the same
+      semantics as <code>rows_title</code> above, but for columns.</li>
+
+      <li><code>rows_unit</code> - A string or an array of strings representing
+      the units of each row dimension. This shares the same semantics as
+      <code>rows_title</code> above, but provides optional unit labels for
+      each dimension.</li>
+
+      <li><code>cols_unit</code> - A string or an array of strings representing
+      the units of each column dimension. This shares the same semantics as
+      <code>cols_title</code> above, but provides optional unit labels for
+      each dimension.</li>
+
+      <li><code>data</code> - An array of JSON objects. Each object represents
+      a single cell value in the table. Each object will have two attributes:
+
+      <ul>
+          <li><code>key</code> is a list containing the row and column keys of
+          the data in the order <code>(row_key, col_key)</code>.</li>
+          <li><code>value</code> is the value for the cell.</li>
+      </ul></li>
+    </ul>
+
+    <p>The ordering of JSON objects in the <code>data</code> element is
+    important: objects will be ordered by row key, then by column key. Hence,
+    if a table has the row keys 1, 2, and 3, and the column keys A and B, the
+    ordering of elements in <code>data</code> will be:</p>
+
+    <p>(1, A), (1, B), (2, A), (2, B), (3, A), (3, B)</p>
+
+    <p>The example below shows the response to the <code>vapour_pressure</code>
+    method request example given above (reformatted for ease of display):</p>
+
+    <pre><code>HTTP/1.1 200 OK
+Date: Sun, 29 Mar 2015 21:53:43 GMT
+Server: Apache/2.4.7 (Ubuntu)
+Set-Cookie: session=eyJjc3JmX3R...; HttpOnly; Path=/
+Content-Length: 401
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: application/json
+
+[{"cols_title": "Compound", "cols_unit": "", "data": [
+{"key": [295.15, "CCCC"], "value": 0.1765486699064518},
+{"key": [305.15, "CCCC"], "value": 0.32059732971034494},
+{"key": [315.15, "CCCC"], "value": 0.4543445602810119},
+{"key": [325.15, "CCCC"], "value": 0.5788572505849052}
+], "name": "pressures", "rows_title": "Temperature", "rows_unit": "K",
+"title": "Vapour pressure as log\u2081\u2080 value"}]</code></pre>
+
+    <h3>Error Handling</h3>
+
+    <p>Standard HTTP status codes are used to indicate errors. For example, in
+    the case that a string is provided to a method instead of a floating point
+    value, a 400 error (bad request) would be returned. The body of such error
+    responses also contains a JSON object which contains the following two
+    attributes:</p>
+
+    <ul>
+      <li><code>exc_type</code> - The class of the exception that occurred on
+      the server side.</li>
+
+      <li><code>exc_value</code> - The value(s) that the exception was
+      constructed with (which usually give extra detail about the error that
+      occurred).</li>
+    </ul>
+
+    <p>The Python client library will automatically convert these back into
+    the appropriate Python exception and raise it (note that only certain
+    exceptions that are considered reasonably safe like ValueError, NameError,
+    and KeyError are treated in this manner). Bindings for other languages
+    may wish to convert this data into something more appropriate.</p>
+
+    <p>The following is an example of an error response (formatted for
+    readability):</p>
+
+    <pre><code>HTTP/1.0 400 BAD REQUEST
+Content-Type: application/json
+Content-Length: 113
+Set-Cookie: session=eyJjc3JmX3Rva...; HttpOnly; Path=/
+Server: Werkzeug/0.9.6 Python/2.7.6
+Date: Sun, 29 Mar 2015 23:32:57 GMT
+
+{
+  "exc_type": "ValueError",
+  "exc_value": "Badly formed parameters: could not convert string to float: foo"
+}</code></pre>
+
+  </div>
+</div>
+{% endblock %}

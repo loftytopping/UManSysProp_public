@@ -74,6 +74,10 @@ def handler(organic_compounds, interactions_method, temperatures):
 
     The *interactions_method* parameter is one of the strings:
 
+    Activity coefficients are predicted assuming a homogeneous bulk representation,
+    allowing all compounds to interact according to the technique applied. No
+    partitioning between the liquid and another phase is accounted for. 
+
     * 'AIOMFAC' - assume non-ideal interactions using the [AIOMFAC]_ model.
 
     This is currently restricted only to AIOMFAC variants. This includes the

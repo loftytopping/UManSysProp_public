@@ -34,6 +34,8 @@ from . import data
 from . import groups
 from .forms import smiles
 
+import pdb
+
 #class PartitioningIterationLimit(Warning):
 #    """
 #    Warning raised when the partitioning loop is terminated due to an excessive
@@ -892,6 +894,8 @@ def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
         for compound, abundance in organic_compounds.items()
         }
 
+    #NOTE we only return the organic activity coefficients here. For including inorganic
+    #ions, this will also need to be passed
     return Ln_gamma_s_MR_LR
 
 
@@ -961,13 +965,13 @@ def calculate_activities_full(organic_compounds, inorganic_ions, temperature):
          )
       for compound, abundance in organic_compounds.items()
       ]
-    m.extend([generic_class(
-         compound=compound,
-         abundance=abundance
-         #molar_mass=compound.molwt
-         )
-      for compound, abundance in inorganic_ions.items()
-      ])
+    #m.extend([generic_class(
+    #     compound=compound,
+    #     abundance=abundance
+    #     #molar_mass=compound.molwt
+    #     )
+    #  for compound, abundance in inorganic_ions.items()
+    #  ])
 
     #BCoa = sum(c.abundance for c in m)
     salts = aiomfac_salts(inorganic_ions)
@@ -978,6 +982,7 @@ def calculate_activities_full(organic_compounds, inorganic_ions, temperature):
 
     Activity_coefficients_sr=aiomfac_sr(organic_compounds, inorganic_ions, temperature)
     Activity_coefficients_mr_lr=aiomfac_mr(organic_compounds, inorganic_ions, temperature)
+    #pdb.set_trace()
     step=0
     for c in m:
         x=m[step].compound
@@ -986,7 +991,7 @@ def calculate_activities_full(organic_compounds, inorganic_ions, temperature):
 
     #for compound, abundance in m.items(0
 
-    return Activity_coefficients_sr, m
+    return Activity_coefficients_mr_lr, m
 
 def calculate_activities_org(organic_compounds, temperature):
     #water_class = (WaterNonIdealPartitioning, WaterIdealPartitioning)[ideality]

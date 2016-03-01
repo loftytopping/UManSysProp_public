@@ -14,7 +14,7 @@ Note you need to have the Python interface to the openbabel package installed (P
 <br />
 Ultimately, we aim to generate a user community around UManSysProp. As we develop and evaluate more predictive techniques and models, according to the scientific peer review process, these will be included in future releases. If you use any of our developments in your code, following the license restrictions, we would appreciate hearing about it. We also request you reference our development paper:
 <br />
-[Topping, D., Barley, M. H., Bane, M., Higham, N., Aumont, B., and McFiggans, G.: UManSysProp: an online facility for molecular property prediction and atmospheric aerosol calculations, Geosci. Model Dev. Discuss., 8, 9669-9706, doi:10.5194/gmdd-8-9669-2015, 2015.](http://www.geosci-model-dev-discuss.net/gmd-2015-197/)
+[Topping, D., Barley, M., Bane, M. K., Higham, N., Aumont, B., Dingle, N., and McFiggans, G.: UManSysProp v1.0: an online and open-source facility for molecular property prediction and atmospheric aerosol calculations, Geosci. Model Dev., 9, 899-914, doi:10.5194/gmd-9-899-2016, 2016.](http://www.geosci-model-dev.net/9/899/2016/)
 <br />
 Code DOI [![DOI](https://zenodo.org/badge/20123/loftytopping/UManSysProp_public.svg)](https://zenodo.org/badge/latestdoi/20123/loftytopping/UManSysProp_public)
 

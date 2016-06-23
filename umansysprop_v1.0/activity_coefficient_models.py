@@ -330,6 +330,7 @@ def aiomfac_sr(organic_compounds, inorganic_ions, temperature):
     #convert scale from mole fraction to molality for ions
     for compound, matches in inorganic_ions.iteritems():
         Ln_gamma_i_SR[compound] = Ln_gamma_i_SR[compound] - ionic_conversion_factor
+                
 
     return Ln_gamma_i_SR
 
@@ -893,10 +894,20 @@ def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
         compound: Ln_gamma_s_LR[compound]+Ln_gamma_s_MR[compound]
         for compound, abundance in organic_compounds.items()
         }
+        
+    # Create a dictionary that holds both ionic and organic values
+    
+    Ln_gamma_tot_MR_LR={}
+    for compound, abundance in organic_compounds.items():
+        Ln_gamma_tot_MR_LR[compound] = Ln_gamma_s_MR_LR[compound]
+    
+    for ion, matches in m_inorg.items():
+        Ln_gamma_tot_MR_LR[ion]= Ln_gamma_i_MR_LR_keys[ion]
+
 
     #NOTE we only return the organic activity coefficients here. For including inorganic
     #ions, this will also need to be passed
-    return Ln_gamma_s_MR_LR
+    return Ln_gamma_tot_MR_LR
 
 
 
@@ -935,7 +946,7 @@ def calculate_activities_sr(organic_compounds, inorganic_ions, temperature):
     #Now calculate activity coefficients associated with each component
     #return it as a value associated with each
 
-    Activity_coefficients=aiomfac_sr(organic_compounds, inorganic_ions, temperature)
+    Activity_coefficients_sr=aiomfac_sr(organic_compounds, inorganic_ions, temperature)
     step=0
     for c in m:
         x=m[step].compound
@@ -944,7 +955,7 @@ def calculate_activities_sr(organic_compounds, inorganic_ions, temperature):
 
     #for compound, abundance in m.items(0
 
-    return Activity_coefficients, m
+    return Activity_coefficients_sr, m
 
 def calculate_activities_full(organic_compounds, inorganic_ions, temperature):
     #water_class = (WaterNonIdealPartitioning, WaterIdealPartitioning)[ideality]
@@ -965,20 +976,22 @@ def calculate_activities_full(organic_compounds, inorganic_ions, temperature):
          )
       for compound, abundance in organic_compounds.items()
       ]
-    #m.extend([generic_class(
-    #     compound=compound,
-    #     abundance=abundance
-    #     #molar_mass=compound.molwt
-    #     )
-    #  for compound, abundance in inorganic_ions.items()
-    #  ])
+    m.extend([generic_class(
+         compound=compound,
+         abundance=abundance
+         #molar_mass=compound.molwt
+         )
+      for compound, abundance in inorganic_ions.items()
+      ])
 
     #BCoa = sum(c.abundance for c in m)
     salts = aiomfac_salts(inorganic_ions)
     core_ion = sum(inorganic_ions.values())
 
     #Now calculate activity coefficients associated with each component
-    #return it as a value associated with each
+    #Note here we combine short range (SR) with long range+mid range (MR_LR)
+    #If you want to call the activity module seperately, you need to bare this in
+    #mind and always combine the two. You can see how this is done in partition_models.partition_model
 
     Activity_coefficients_sr=aiomfac_sr(organic_compounds, inorganic_ions, temperature)
     Activity_coefficients_mr_lr=aiomfac_mr(organic_compounds, inorganic_ions, temperature)

@@ -190,6 +190,8 @@ STEIN_AND_BROWN_SMARTS                 = _read_smarts('stein_and_brown.smarts')
 AIOMFAC_UNIFAC_SMARTS                  = _read_smarts('aiomfac_unifac.smarts')
 AIOMFAC_HCTAIL_SMARTS                  = _read_smarts('aiomfac_hctail.smarts')
 AIOMFAC_ION_SMARTS                     = _read_smarts('aiomfac_ions.smarts')
+FP4_SMARTS                             = _read_smarts('FP4.smarts')
+MACCS_SMARTS                           = _read_smarts('MACCS.smarts')
 
 NANNOOLAL_BOILING_POINT_INTERACTIONS   = _read_matrix('nannoolal_bp_interactions.matrix')
 NANNOOLAL_VAPOUR_PRESSURE_INTERACTIONS = _read_matrix('nannoolal_vp_interactions.matrix')

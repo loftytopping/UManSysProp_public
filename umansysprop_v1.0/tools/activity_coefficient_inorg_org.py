@@ -57,7 +57,7 @@ class HandlerForm(Form):
             ('O', 'Water'),
             ])
     inorganic_ions = SMILESDictField(
-        'Inorganic ions', entry_label='SMILES', data_label='µmol/cc',
+        'Inorganic ions', entry_label='SMILES', data_label='Relative molar concentration',
         compounds=[
             ('[Na+]',             'Sodium cation'),
             ('[K+]',              'Potassium cation'),
@@ -91,6 +91,10 @@ def handler(
     dissociated ions (all given *temperatures*, given as a sequence of floating
     point values in Kelvin).
 
+    Activity coefficients are predicted assuming a homogeneous bulk representation,
+    allowing all compounds to interact according to the technique applied. No
+    partitioning between the liquid and another phase is accounted for. 
+
     The *interactions_method* parameter is one of the strings:
 
     * 'UNIFAC' - assume non-ideal interactions using the [UNIFAC]_ model.
@@ -122,14 +126,14 @@ def handler(
 
     coefficients = {}
     for temperature in temperatures:
-        activity_result, m = activity_coefficient(organic_compounds, inorganic_ions, temperature)
+        activity_result_only_mr_lr, m = activity_coefficient(organic_compounds, inorganic_ions, temperature)
         for c in m:
             coefficients[(temperature), str(c.compound).strip()] = c.activity_coefficient
 
     return Result(
         Table(
             'coefficients',
-            title='Activity coefficients (unitless, on the mole fraction scale) in the one liquid phase',
+            title='Activity coefficients for organic compounds (unitless, on the mole fraction scale) and for inorganic ions (molality scale)',
             rows_title=('Temperature'), rows_unit=('K'), rows=temperatures,
             cols_title='Compound', cols=[str(c.compound).strip() for c in m],
             data=coefficients,

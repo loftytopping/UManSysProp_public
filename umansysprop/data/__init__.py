@@ -46,7 +46,7 @@ def _read_data(
             try:
                 if cols is None:
                     cols = len(data)
-                elif len(data) <> cols:
+                elif len(data) != cols:
                     raise ValueError(
                             'Unexpected number of values (expected %d)' % cols)
                 key = key_conv(data[key_col])

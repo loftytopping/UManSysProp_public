@@ -499,9 +499,13 @@ def growth_factor_model_inorg_org(organic_compounds, inorganic_ions, pressure, d
     #    total_mass_dry=sum(value*salt_mw[salt] for salt, value in salts.items())
     #density_dry=1.0/(sum(((value*salt_mw[salt])/total_mass_dry)/salt_density[salt] for salt, value in salts.items()))
 
+    salt_dens_temp=sum(salt_density[salt] for salt, value in salts.items())
     total_mass_dry=sum((key.molwt*value for key, value in organic_compounds.items()))+sum(value*salt_mw[salt] for salt, value in salts.items())
     density_dry=1.0/(sum(((value*key.molwt)/total_mass_dry)/(density[key]*1.0e3) for key, value in organic_compounds.items())+\
         sum(((value*salt_mw[salt])/total_mass_dry)/salt_density[salt] for salt, value in salts.items()))
+        
+    density_dry_start=density_dry
+    
 
     conversion_factor=((4.0/3.0)*3.141592*pow(diameter*0.5e-9,3.0)*density_dry)/total_mass_dry
     #Now work out the equilibrium water concentration using a root finding method
@@ -522,6 +526,7 @@ def growth_factor_model_inorg_org(organic_compounds, inorganic_ions, pressure, d
                 for c in m
                 }
     water_key = [c for c in organic_compounds_act if str(c).strip() == 'O'][0]
+    org_key = [c for c in organic_compounds_act if str(c).strip() != 'O'][0]
     organic_compounds_act_a = organic_compounds_act.copy()
     organic_compounds_act_b = organic_compounds_act.copy()
     organic_compounds_act_a[water_key]=a
@@ -625,4 +630,5 @@ def growth_factor_model_inorg_org(organic_compounds, inorganic_ions, pressure, d
     mass_frac_sol=total_mass_wet/total_mass_dry
 
     return growth_factor, Kappa, water_activity, org_vp, org_activity_coeffs, mass_frac_sol
+    #return water_activity_b, Kappa, water_activity, org_vp, org_activity_coeffs, mass_frac_sol
 

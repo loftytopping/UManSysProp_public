@@ -34,7 +34,6 @@ from . import data
 from . import groups
 from .forms import smiles
 
-import pdb
 
 #class PartitioningIterationLimit(Warning):
 #    """
@@ -120,6 +119,8 @@ def aiomfac_sr(organic_compounds, inorganic_ions, temperature):
     # XXX Need to exclude any groups which have zero matches in the following
     # calculation; the original does this as an "optimization" and yet it
     # produces a different answer. Hmmm ...
+    
+    #pdb.set_trace()
 
     non_zero_groups = {
         group
@@ -331,7 +332,7 @@ def aiomfac_sr(organic_compounds, inorganic_ions, temperature):
     for compound, matches in inorganic_ions.iteritems():
         Ln_gamma_i_SR[compound] = Ln_gamma_i_SR[compound] - ionic_conversion_factor
                 
-
+    #pdb.set_trace()
     return Ln_gamma_i_SR
 
 def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
@@ -357,19 +358,21 @@ def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
 
     solvent_kg=sum((key.molwt*1e-3)*value for key, value in organic_compounds.items())
 
-    total_non_zero_groups=0
+    #total_non_zero_groups=0
     #conc_non_zero_groups={}
-    for compound, matches in m_org.items():
-        for group, count in matches.items():
-            if count > 0:
-                #conc_non_zero_groups[group]=conc_non_zero_groups[group]+count
-                total_non_zero_groups=total_non_zero_groups+count
+    #for compound, matches in m_org.items():
+    #    for group, count in matches.items():
+    #        if count > 0:
+    #            #conc_non_zero_groups[group]=conc_non_zero_groups[group]+count
+    #            total_non_zero_groups=total_non_zero_groups+count
 
     #only over the organic functional groups
     conc_non_zero_groups = {
-        groups: sum(m_org[compound].get(groups, 0) for compound, matches in m_org.items())
+        groups: sum(m_org[compound].get(groups, 0)*organic_compounds[compound] for compound, matches in m_org.items())
         for groups in non_zero_groups
                            }
+                           
+    total_non_zero_groups=sum(conc_non_zero_groups.values())                       
     #again, only over the organic compounds
     mole_frac_non_zero_groups = {
         groups: conc_non_zero_groups[groups]/total_non_zero_groups
@@ -907,6 +910,7 @@ def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
 
     #NOTE we only return the organic activity coefficients here. For including inorganic
     #ions, this will also need to be passed
+    #pdb.set_trace()
     return Ln_gamma_tot_MR_LR
 
 
@@ -998,12 +1002,12 @@ def calculate_activities_full(organic_compounds, inorganic_ions, temperature):
     #pdb.set_trace()
     step=0
     for c in m:
-        x=m[step].compound
+        x=c.compound
         c.update(exp(Activity_coefficients_sr[x]+Activity_coefficients_mr_lr[x]))
         step+=1
 
     #for compound, abundance in m.items(0
-
+    #pdb.set_trace()
     return Activity_coefficients_mr_lr, m
 
 def calculate_activities_org(organic_compounds, temperature):
@@ -1041,11 +1045,14 @@ def calculate_activities_org(organic_compounds, temperature):
     #return it as a value associated with each
 
     Activity_coefficients_sr=aiomfac_sr(organic_compounds, {}, temperature)
+
+    #pdb.set_trace()
     #Activity_coefficients_mr_lr=aiomfac_mr(organic_compounds, inorganic_ions, temperature)
     step=0
     for c in m:
-        x=m[step].compound
+        x=c.compound
         c.update(exp(Activity_coefficients_sr[x]))
+        
         step+=1
 
     #for compound, abundance in m.items(0

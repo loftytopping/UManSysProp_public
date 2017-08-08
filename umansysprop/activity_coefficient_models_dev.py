@@ -1455,7 +1455,7 @@ def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
     #pdb.set_trace()
     return Ln_gamma_tot_MR_LR
     
-def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species_dict2array,ion_dict2array,num_species,abundance_array,cation_index,anion_index):
+def aiomfac_mr_persistent(organic_compounds, inorganic_ions, temperature,species_dict2array,ion_dict2array,num_species,abundance_array,cation_index,anion_index):
     
     #The purpose of this function is the create the persistant variables that are used throughout the calculation of MR terms
     #It uses the flexible dictionary nature of the original development but provides variables for use with the 'fast version'
@@ -1466,7 +1466,9 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
 
     m_org = aiomfac_organic(organic_compounds)
     m_inorg = aiomfac_inorganic(inorganic_ions)
-
+    #now calculate properties associated with the ions - molalities
+    m_ions = groups_func.all_matches(data.AIOMFAC_ION_SMARTS, inorganic_ions) #might use this
+    
     list_compounds=organic_compounds.copy()
     list_compounds.update(inorganic_ions)
     #Mole fraction of all compounds
@@ -1529,6 +1531,7 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
         for ion, count in m_ions.items() #ion is a numeric key, not a pybel object
         if count and data.AIOMFAC_ION_CHARGE[ion] > 0.0
         }
+    cations=list(cations)
     #Now setup a dictionary that creates cation array indices
     step=0
     cation2array = dict()
@@ -1543,6 +1546,7 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
         for ion, count in m_ions.items()
         if count and data.AIOMFAC_ION_CHARGE[ion] < 0.0
         }
+    anions=list(anions)
     step=0
     anion2array = dict()
     for ion in anions:
@@ -1631,6 +1635,8 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
     persistant_data['b1_ki_temp_persistent']=b1_ki_temp_persistent
     persistant_data['b2_ki_temp_persistent']=b2_ki_temp_persistent
     persistant_data['b3_ki_temp_persistent']=b3_ki_temp_persistent
+
+    #pdb.set_trace()
     
     ##b1ca, b2ca, b3ca
     b1_ca_temp = {
@@ -1638,49 +1644,49 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
             anion: 0.0
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     b2_ca_temp = {
         cation: {
             anion: 0.0
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     b3_ca_temp = {
         cation: {
             anion: 0.0
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     b1_ca_temp = {
         cation: {
             anion: data.AIOMFAC_MR_ION_ION_INTERACTIONS_b1[cation-1][anion-1]
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     b2_ca_temp = {
         cation: {
             anion: data.AIOMFAC_MR_ION_ION_INTERACTIONS_b2[cation-1][anion-1]
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     b3_ca_temp = {
         cation: {
             anion: data.AIOMFAC_MR_ION_ION_INTERACTIONS_b3[cation-1][anion-1]
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     #pdb.set_trace()
-    b1_ca_temp_persistent=np.zeros((len(cations),len(anion_molality_old.keys())),)
-    b2_ca_temp_persistent=np.zeros((len(cations),len(anion_molality_old.keys())),)
-    b3_ca_temp_persistent=np.zeros((len(cations),len(anion_molality_old.keys())),)
+    b1_ca_temp_persistent=np.zeros((len(cations),len(anions)),)
+    b2_ca_temp_persistent=np.zeros((len(cations),len(anions)),)
+    b3_ca_temp_persistent=np.zeros((len(cations),len(anions)),)
     #pdb.set_trace()
-    for cation, value in cations:
+    for cation in cations:
         for anion in anions:
             b1_ca_temp_persistent[cation2array[cation],anion2array[anion]]=b1_ca_temp[cation][anion]
             b2_ca_temp_persistent[cation2array[cation],anion2array[anion]]=b2_ca_temp[cation][anion]
@@ -1696,7 +1702,7 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
             anion: 0.0 #data.AIOMFAC_MR_ION_ION_INTERACTIONS_c1[cations][anions]
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     c1_ca_temp_persistent=np.zeros((len(cations),len(anions)),)
     c1_ca_temp_persistent[:,:]=0.0
@@ -1706,7 +1712,7 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
             anion: 0.0  #populate default value and change in following if needs be
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
 
     c2_ca_temp_persistent=np.zeros((len(cations),len(anions)),)
@@ -1716,10 +1722,10 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
             anion: data.AIOMFAC_MR_ION_ION_INTERACTIONS_c2[cation-1][anion-1]
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
-    for cation, value in cations:
-        for anion, value in anions:
+    for cation in cations:
+        for anion in anions:
             c2_ca_temp_persistent[cation2array[cation],anion2array[anion]]=c2_ca_temp[cation][anion]    
 
     c3_ca_temp_persistent=np.zeros((len(cations),len(anions)),)
@@ -1729,16 +1735,16 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
             anion: 0.6 #populate default value and change in following if needs be
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
     c3_ca_temp = {
         cation: {
             anion: data.AIOMFAC_MR_ION_ION_INTERACTIONS_c3[cation-1][anion-1]
             for anion in anions
             }
-        for cation, value in cations
+        for cation in cations
         }
-    for cation, value in cations:
+    for cation in cations:
         for anion in anions:
             c3_ca_temp_persistent[cation2array[cation],anion2array[anion]]=c3_ca_temp[cation][anion]    
 
@@ -1784,7 +1790,7 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
         cation: {
             cation_dash:{
                 anion: 0.0
-                for anion in anions.items()
+                for anion, value in anion_dict.items()
                 }
             for cation_dash, value in cation_dict.items()
             }
@@ -1793,9 +1799,9 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
     Qc_cdash[204][205][248]=0.448354085300000e-03
     Qc_cdash[205][204][248]=0.448354085300000e-03
     Qc_cdash_persistent=np.zeros((len(cations),len(cations),len(anions)),)
-    for cation in cations:
-        for cation_dash in cations:
-            for anion in anions:
+    for cation, value in cation_dict.items():
+        for cation_dash, value in cation_dict.items():
+            for anion, value in anion_dict.items():
                 if cation in cation2array.keys() and cation_dash in cation2array.keys() and anion in anion2array.keys():
                     Qc_cdash_persistent[cation2array[cation],cation2array[cation_dash],anion2array[anion]]=Qc_cdash[cation][cation_dash][anion]
                     
@@ -1804,30 +1810,31 @@ def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species
     
     return persistant_data
     
-def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,temp,organic_compounds_act,Inorganic_ions):
+def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,temperature,organic_compounds_act,Inorganic_ions):
     #This function relies on the provision of persistent variables and uses numpy operation wherever possible.
     
-    non_zero_groups_list=persistant_data['non_zero_groups_list']
-    non_zero_groups_flag=persistant_data['non_zero_groups_flag']
-    num_orgs=persistant_data['num_orgs']
-    molw_array_org=persistant_data['molw_array_org']
-    cation2array=persistant_data['cation2array'] 
-    anion2array=persistant_data['anion2array']
-    ion_charge=persistant_data['ion_charge']
-    b1_ki_temp_persistent=persistant_data['b1_ki_temp_persistent']
-    b2_ki_temp_persistent=persistant_data['b2_ki_temp_persistent']
-    b3_ki_temp_persistent=persistant_data['b3_ki_temp_persistent']
-    b1_ca_temp_persistent=persistant_data['b1_ca_temp_persistent']
-    b2_ca_temp_persistent=persistant_data['b2_ca_temp_persistent']
-    b3_ca_temp_persistent=persistant_data['b3_ca_temp_persistent']   
-    c1_ca_temp_persistent=persistant_data['c1_ca_temp_persistent']
-    c2_ca_temp_persistent=persistant_data['c2_ca_temp_persistent']
-    c3_ca_temp_persistent=persistant_data['c3_ca_temp_persistent']    
-    Rc_cdash_persistent=persistant_data['Rc_cdash_persistent']
-    Mk_sol_persistent=persistant_data['Mk_sol_persistent']    
-    Qc_cdash_persistent=persistant_data['Qc_cdash_persistent']
     
-    ion_abundance=abundance_array[num_species::]
+    non_zero_groups_list=persistent_data['non_zero_groups_list']
+    non_zero_groups_flag=persistent_data['non_zero_groups_flag']
+    num_orgs=persistent_data['num_orgs']
+    molw_array_org=persistent_data['molw_array_org']
+    cation2array=persistent_data['cation2array'] 
+    anion2array=persistent_data['anion2array']
+    ion_charge=persistent_data['ion_charge']
+    b1_ki_temp_persistent=persistent_data['b1_ki_temp_persistent']
+    b2_ki_temp_persistent=persistent_data['b2_ki_temp_persistent']
+    b3_ki_temp_persistent=persistent_data['b3_ki_temp_persistent']
+    b1_ca_temp_persistent=persistent_data['b1_ca_temp_persistent']
+    b2_ca_temp_persistent=persistent_data['b2_ca_temp_persistent']
+    b3_ca_temp_persistent=persistent_data['b3_ca_temp_persistent']   
+    c1_ca_temp_persistent=persistent_data['c1_ca_temp_persistent']
+    c2_ca_temp_persistent=persistent_data['c2_ca_temp_persistent']
+    c3_ca_temp_persistent=persistent_data['c3_ca_temp_persistent']    
+    Rc_cdash_persistent=persistent_data['Rc_cdash_persistent']
+    Mk_sol_persistent=persistent_data['Mk_sol_persistent']    
+    Qc_cdash_persistent=persistent_data['Qc_cdash_persistent']
+    
+    ion_abundance=abundance_array[num_orgs::]
     solvent_kg=np.sum(molw_array_org*np.array(abundance_array[0:num_orgs,0]))*1.0e-3
     #For the persistent version, here we just multiply the non_zero_groups_flag by the 
     #concentration of each compound
@@ -1840,6 +1847,8 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
     
     cation_molality = ion_abundance[[cation_index]]/solvent_kg
     anion_molality = ion_abundance[[anion_index]]/solvent_kg
+    
+    #pdb.set_trace()
 
     Ionic_strength = np.sum(np.multiply(np.power(ion_charge,2.0),ion_molalities))*0.5
 
@@ -1848,22 +1857,37 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
     #Organic-ion interactions
     if (Ionic_strength<250.0):
         
+        temp=(np.exp(-1.0*c3_ca_temp_persistent*np.power(Ionic_strength,0.5)))
+        temp2=np.multiply(c3_ca_temp_persistent,np.power(Ionic_strength,-0.5)*temp)
+        Cca_dash_persistent=np.multiply(-0.5*c2_ca_temp_persistent,temp2)
+        #pdb.set_trace()
+        
+        temp = np.exp(-1.0*b3_ki_temp_persistent*np.power(Ionic_strength,0.5))
         Bki_persistent = b1_ki_temp_persistent+ np.multiply(b2_ki_temp_persistent,np.exp(-1.0*b3_ki_temp_persistent*np.power(Ionic_strength,0.5)))
         Bki_dash_persistent = np.multiply(-0.5*b2_ki_temp_persistent,np.multiply(b3_ki_temp_persistent,np.power(Ionic_strength,-0.5)*temp))
+        temp=np.exp(-1.0*b3_ca_temp_persistent*(np.power(Ionic_strength,0.5)))
         Bca_persistent=b1_ca_temp_persistent+np.multiply(b2_ca_temp_persistent,temp)
+        
+        pdb.set_trace()
 
         temp=(np.exp(-1.0*b3_ca_temp_persistent*np.power(Ionic_strength,0.5)))
         temp2=np.multiply(b3_ca_temp_persistent,np.power(Ionic_strength,-0.5)*temp)
         #temp3=np.multiply(temp2,temp)
         #pdb.set_trace()
         Bca_dash_persistent=np.multiply(-0.5*b2_ca_temp_persistent,temp2)
+        
+        #pdb.set_trace()
 
         temp=np.exp(-1.0*c3_ca_temp_persistent*(np.power(Ionic_strength,0.5)))
         Cca_persistent=c1_ca_temp_persistent+np.multiply(c2_ca_temp_persistent,temp)
+        
+        #pdb.set_trace()
 
         temp=(np.exp(-1.0*c3_ca_temp_persistent*np.power(Ionic_strength,0.5)))
         temp2=np.multiply(c3_ca_temp_persistent,np.power(Ionic_strength,-0.5)*temp)
         Cca_dash_persistent=np.multiply(-0.5*c2_ca_temp_persistent,temp2)
+        
+        #pdb.set_trace()
         
     elif (Ionic_strength>=250.0):
 
@@ -1871,28 +1895,38 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
         Bki_dash_persistent = np.zeros((len(non_zero_groups_list),len(ion_molalities)),)
 
         Bca_persistent=b1_ca_temp_persistent
-        Bca_dash_persistent=np.zeros((len(cation_molality_old.keys()),len(anion_molality_old.keys())),)
+        Bca_dash_persistent=np.zeros((len(cation_molality),len(anion_molality)),)
 
         Cca_persistent=c1_ca_temp_persistent
-        Cca_dash_persistent=np.zeros((len(cation_molality_old.keys()),len(anion_molality_old.keys())),)
+        Cca_dash_persistent=np.zeros((len(cation_molality),len(anion_molality)),)
+    
+    #pdb.set_trace()
 
     #Average molecular weight of the functional groups
     M_solv_mix_persistent = np.sum(Mk_sol_persistent*mole_frac_non_zero_groups)
     #Now calculate the activity coefficient of the separate organic functional groups
     summation1_persistent = np.sum(Bki_persistent*np.transpose(ion_molalities),axis=1)
     matrix_temp=np.repeat((mole_frac_non_zero_groups.reshape(len(non_zero_groups_list),1)),len(ion_molalities),axis=1)*np.transpose(ion_molalities)
-    temp_summation1_persistent = np.sum(np.multiply((Bki_persistent+Ionic_strength_new*Bki_dash_persistent),matrix_temp))
+    temp_summation1_persistent = np.sum(np.multiply((Bki_persistent+Ionic_strength*Bki_dash_persistent),matrix_temp))
     summation2_persistent=temp_summation1_persistent*(Mk_sol_persistent/M_solv_mix_persistent)
+    
+    #pdb.set_trace()
 
     #A2) ion-ion interactions
     matrix_temp = np.repeat((cation_molality.reshape(len(cation_molality),1)),len(anion_molality),axis=1)*anion_molality
     temp_summation2_persistent = np.sum(np.multiply((Bca_persistent + Ionic_strength*Bca_dash_persistent),matrix_temp))
-    
     summation3_persistent=temp_summation2_persistent*(Mk_sol_persistent)
+
+    #matrix_temp = np.repeat((cation_molality.reshape(len(cation_molality),1)),len(anion_molality),axis=1)*anion_molality
+    #temp_summation2_persistent = np.sum(np.multiply((Bca_persistent + Ionic_strength*Bca_dash_persistent),matrix_temp))
+    #summation3_persistent=temp_summation2_persistent*(Mk_sol_persistent)
+
     #A3) ion-ion interactions
     temp_summation3_persistent = np.sum(np.multiply(ion_molalities,abs(ion_charge)))
     temp_summation4_persistent = np.sum(np.multiply((2.0*Cca_persistent + Ionic_strength*Cca_dash_persistent),matrix_temp))
     summation4_persistent=temp_summation3_persistent*temp_summation4_persistent*(Mk_sol_persistent)
+    
+    #pdb.set_trace()
     
     #A4) cation, cation (only need to do if more than one cation)
     matrix_temp2 = np.repeat((cation_molality.reshape(len(cation_molality),1)),len(cation_molality),axis=1)*cation_molality
@@ -1907,6 +1941,7 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
 
     ln_gamma_k_MR_persistent = summation1_persistent - summation2_persistent - summation3_persistent - summation4_persistent - summation5_persistent - summation6_persistent
     #pdb.set_trace()
+    #pdb.set_trace()
     #Ln_gamma_s_MR=numpy.zeros((1,org_molecules),)
     #for molecule_step in range(org_molecules):
     #    for k in range(max_group_num_org_main):
@@ -1916,55 +1951,86 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
     #Add up contributions from each group according to stochiometry
     Ln_gamma_s_MR_persistent =np.sum((non_zero_groups_flag*ln_gamma_k_MR_persistent),axis=1)
     
+    #pdb.set_trace()
+    
     #Activity coefficient for ions
     #Generic calculations
     summation1_ion_persistent = np.sum(Bki_persistent*mole_frac_non_zero_groups[:, np.newaxis],axis=0)*(1.0/M_solv_mix_persistent)
+    
+    #pdb.set_trace()
 
     pre_summation2_ion_persistent = np.sum(np.multiply(np.multiply(Bki_dash_persistent,np.transpose(ion_molalities)),mole_frac_non_zero_groups[:, np.newaxis]))
     summation2_ion_persistent = (np.power(abs(ion_charge),2.0)/2.0*M_solv_mix_persistent)*pre_summation2_ion_persistent
+    
+    #pdb.set_trace()
 
     pre_summation4_ion_persistent = np.sum(matrix_temp*Bca_dash_persistent)
     summation4_ion_persistent = pre_summation4_ion_persistent*0.5*np.power(abs((ion_charge)),2.0)
+    
+    #pdb.set_trace()
 
     pre_summation5_ion_persistent = np.sum(abs(ion_charge)*ion_molalities)
     pre_summation6_ion_persistent = pre_summation5_ion_persistent
     summation6_ion_persistent=np.zeros((len(ion_molalities)),)
+    step=0
     for value in ion_molalities:
         summation6_ion_persistent[step]=np.sum(((Cca_persistent*abs(ion_charge[step]))+Cca_dash_persistent*(np.power(abs(ion_charge[step]),2.0)*0.5)*pre_summation6_ion_persistent)*matrix_temp)
         step+=1
     
+    #pdb.set_trace()
+    
     #Cation/anion specific calculations
     summation3_ion_cation_persistent = np.sum(np.multiply(Bca_persistent,anion_molality[np.newaxis,:]),axis=1)
     summation3_ion_anion_persistent = np.sum(np.multiply(Bca_persistent,cation_molality[:,np.newaxis]),axis=0)
+    
+    #pdb.set_trace()
 
     summation3_ion_persistent =summation3_ion_cation_persistent.copy()
     summation3_ion_persistent=np.append(summation3_ion_persistent,summation3_ion_anion_persistent)
+    
+    #pdb.set_trace()
 
     summation5_ion_cation_persistent=np.sum(np.multiply(Cca_persistent,anion_molality[np.newaxis,:])*pre_summation5_ion_persistent,axis=1)
     summation5_ion_anion_persistent=np.sum(np.multiply(Cca_persistent,cation_molality[:,np.newaxis])*pre_summation5_ion_persistent,axis=0)
+    
+    #pdb.set_trace()
 
     summation5_ion_persistent =summation5_ion_cation_persistent.copy()
     summation5_ion_persistent=np.append(summation5_ion_persistent,summation5_ion_anion_persistent)
     
+    #pdb.set_trace()
+    
     summation7_ion_cation_1_persistent =np.sum(np.multiply(Rc_cdash_persistent,cation_molality[np.newaxis,:]),axis=1)
+    
+    #pdb.set_trace()
 
     summation7_ion_cation_2_persistent=np.zeros((len(cation_molality)),)
     step=0
     for value in cation_molality:
         summation7_ion_cation_2_persistent[step]=np.sum(np.multiply(Qc_cdash_persistent[step,:,:],matrix_temp))
         
+    #pdb.set_trace()
+        
     summation7_ion_cation_persistent=summation7_ion_cation_1_persistent+summation7_ion_cation_2_persistent
+    
+    #pdb.set_trace()
 
     summation7_ion_anion_persistent=np.zeros((len(anion_molality)),)
     step=0
     for value in anion_molality:
         summation7_ion_anion_persistent[step]=np.sum(np.multiply(Qc_cdash_persistent[:,:,step],matrix_temp))
+        
+    #pdb.set_trace()
 
     summation7_ion_persistent=summation7_ion_cation_persistent.copy()
     summation7_ion_persistent=np.append(summation7_ion_persistent,summation7_ion_anion_persistent)
     
+    #pdb.set_trace()
+    
     Ln_gamma_i_MR_persistent=summation1_ion_persistent+summation2_ion_persistent[:,0]+summation3_ion_persistent+summation4_ion_persistent[:,0]+\
     summation5_ion_persistent+summation6_ion_persistent+summation7_ion_persistent
+    
+    #pdb.set_trace()
 
     #--------------------------------------------------------------------------------------------
     #Now calculate the LR portion of the activity coefficient for both organics and ions
@@ -1987,24 +2053,39 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
     summation_ion_1=A*pow(Ionic_strength,0.5);
     summation_ion_2=1+b*pow(Ionic_strength,0.5);
 
+    #pdb.set_trace()
 
     #--Organic solvent activity coefficients---
     Ln_gamma_s_LR_persistent=((2.0*A*(molw_array_org*1e-3))/(np.power(b,3.0)))*summation_org
+    
+    #pdb.set_trace()
 
     #--Ionic activity coefficients--
     Ln_gamma_i_LR_persistent=(-1.0*np.power(abs(ion_charge),2.0)*summation_ion_1)/summation_ion_2
+    
+    #pdb.set_trace()
 
     #Now calculate the conversion factor to change the reference state from mole fraction to molality    
-    x_i_org_persistent=np.array(abundance_array[0:num_orgs,0])/(np.sum(np.array(abundance_array[0:num_orgs,0]))
+    x_i_org_persistent=np.array(abundance_array[0:num_orgs,0])/(np.sum(np.array(abundance_array[0:num_orgs,0])))
+    
+    #pdb.set_trace()
 
     mean_mw_solvent_persistent=np.sum(np.multiply(x_i_org_persistent,molw_array_org)*1e-3)
+    
+    #pdb.set_trace()
 
     sum_molalities_persistent=np.sum(ion_molalities)
+    
+    #pdb.set_trace()
 
     ionic_conversion_factor_persistent=log((0.01801528/mean_mw_solvent_persistent)+0.01801528*sum_molalities_persistent)
+    
+    #pdb.set_trace()
 
     #Now map this ontp pybel objects as keys rather than integers
-    Ln_gamma_i_MR_LR_persistent=Ln_gamma_i_MR_persistent+Ln_gamma_i_LR_persistent-ionic_conversion_factor
+    Ln_gamma_i_MR_LR_persistent=Ln_gamma_i_MR_persistent+Ln_gamma_i_LR_persistent[:,0]-ionic_conversion_factor_persistent
+    
+    #pdb.set_trace()
 
     #Ln_gamma_i_MR_LR_keys = {
     #    ion: Ln_gamma_i_MR_LR[old_key] #q_k_i[compound].get(group1, 0)
@@ -2017,7 +2098,9 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
     #    for compound, abundance in organic_compounds.items()
     #    }
     Ln_gamma_s_MR_LR_persistent = Ln_gamma_s_LR_persistent+Ln_gamma_s_MR_persistent
-    Ln_gamma_tot_MR_LR_persistent = np.append(Ln_gamma_s_MR_LR_persistent,Ln_gamma_i_MR_LR_persistent)
+    Ln_gamma_tot_MR_LR_persistent = np.append(Ln_gamma_s_MR_LR_persistent.T,Ln_gamma_i_MR_LR_persistent)
+    
+    #pdb.set_trace()
         
     # Create a dictionary that holds both ionic and organic values
     #Ln_gamma_tot_MR_LR={}
@@ -2464,6 +2547,7 @@ def aiomfac_mr_test(species_dict2array,ion_dict2array,num_species,abundance_arra
         temp=np.exp(-1.0*b3_ca_temp_persistent*(np.power(Ionic_strength,0.5)))
         #pdb.set_trace()
         Bca_persistent=b1_ca_temp_persistent+np.multiply(b2_ca_temp_persistent,temp)
+        pdb.set_trace()
         Bca_dash = {
             cations: {
                 #Bca_dash[c,a]=-0.5*b2_ca_temp[c,a]*b3_ca_temp[c,a]*(numpy.power(I,-0.5))*numpy.exp(-1*b3_ca_temp[c,a]*numpy.power(I,0.5))
@@ -2854,7 +2938,7 @@ def aiomfac_mr_test(species_dict2array,ion_dict2array,num_species,abundance_arra
         compound: value/total_abundance_org for compound, value in organic_compounds.items()
         }
     
-    x_i_org_persistent=np.array(abundance_array[0:num_orgs,0])/(np.sum(np.array(abundance_array[0:num_orgs,0]))
+    x_i_org_persistent=np.array(abundance_array[0:num_orgs,0])/(np.sum(np.array(abundance_array[0:num_orgs,0])))
 	
     mean_mw_solvent=sum(x_i_org[compound]*(compound.molwt*1e-3) for compound, value in organic_compounds.items())
     mean_mw_solvent_persistent=np.sum(np.multiply(x_i_org_persistent,molw_array_org)*1e-3)
@@ -2884,6 +2968,7 @@ def aiomfac_mr_test(species_dict2array,ion_dict2array,num_species,abundance_arra
         compound: Ln_gamma_s_LR[compound]+Ln_gamma_s_MR[compound]
         for compound, abundance in organic_compounds.items()
         }
+    pdb.set_trace()
     Ln_gamma_s_MR_LR_persistent = Ln_gamma_s_LR_persistent+Ln_gamma_s_MR_persistent
     Ln_gamma_tot_MR_LR_persistent = np.append(Ln_gamma_s_MR_LR_persistent,Ln_gamma_i_MR_LR_persistent)
         

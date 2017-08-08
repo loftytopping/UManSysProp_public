@@ -1455,7 +1455,7 @@ def aiomfac_mr(organic_compounds, inorganic_ions, temperature):
     #pdb.set_trace()
     return Ln_gamma_tot_MR_LR
     
-def aiomfac_mr_persistant(species_dict2array,ion_dict2array,num_species,abundance_array,cation_index,anion_index,organic_compounds, inorganic_ions, temperature):
+def aiomfac_mr_persistant(organic_compounds, inorganic_ions, temperature,species_dict2array,ion_dict2array,num_species,abundance_array,cation_index,anion_index):
     
     #The purpose of this function is the create the persistant variables that are used throughout the calculation of MR terms
     #It uses the flexible dictionary nature of the original development but provides variables for use with the 'fast version'

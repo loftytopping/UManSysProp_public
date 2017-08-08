@@ -33,6 +33,7 @@ from math import sqrt, exp, log, log10, isinf
 from . import data
 from . import groups
 from .forms import smiles
+import pdb
 
 
 #class PartitioningIterationLimit(Warning):
@@ -128,6 +129,8 @@ def aiomfac_sr(organic_compounds, inorganic_ions, temperature):
         for group, count in matches.items()
         if count > 0
         }
+        
+    #pdb.set_trace()
 
     q_k_i = {
         compound: {
@@ -271,7 +274,9 @@ def aiomfac_sr(organic_compounds, inorganic_ions, temperature):
             }
         for compound, matches in m.items()
         }
-
+ 
+    #pdb.set_trace()
+    
     summation2 = {
         compound: {
             group1: xx_weird_i_n[compound][group1]-omega_i[compound]+brac1[compound][group1]-brac2[compound][group1]

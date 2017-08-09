@@ -376,6 +376,62 @@ def aiomfac_sr_quick(abundance,persistent_dict, temperature):
 
     return Ln_gamma_i_SR
 
+def aiomfac_sr_quick(abundance,persistent_dict, temperature):    
+
+    non_zero_groups_list=persistent_dict['non_zero_groups_list']
+    q_k_i_np=persistent_dict['q_k_i_np']
+    q_i_np=persistent_dict['q_i_np']
+    r_i_np=persistent_dict['r_i_np']
+    u_i_m_n_np=persistent_dict['u_i_m_n_np']
+    s_i_n_np=persistent_dict['s_i_n_np']
+    brac1=persistent_dict['brac1_np']
+    
+    numb_nonzero_groups=len(non_zero_groups_list)
+    numb_compounds=len(abundance)    
+    
+    total_abundance = sum(value for key, value in list_compounds.iteritems())
+
+    x_i=abundance/(np.sum(abundance))
+
+    Q=np.sum(x_i.flatten()*q_i_np.flatten())
+     
+    omega_i=np.log(q_i_np/Q)
+
+    R=np.sum(x_i.flatten()*r_i_np.flatten())
+
+    row_i=r_i_np/R
+
+    P_i = np.log(r_i_np/R)
+
+    delta_i = np.multiply(row_i,(5.0*Q-1.0))
+
+    cross_i = np.multiply(q_i_np,5.0)
+
+    Ln_gamma_i_C = 1.0+delta_i+P_i+np.multiply(cross_i,(omega_i-P_i-1.0))
+    
+    uu_m_n=np.zeros((numb_nonzero_groups,numb_nonzero_groups),)
+    for grp1 in range(numb_nonzero_groups):
+        for grp2 in range(numb_nonzero_groups):
+            uu_m_n[grp1,grp2]=np.sum(x_i[:,0]*u_i_m_n_np[:,grp1,grp2])
+
+    ss_n=np.sum(x_i*s_i_n_np,axis=0)
+
+    xx_weird_i_n=np.log(s_i_n_np/ss_n)
+
+    brac2 = np.zeros((numb_compounds,numb_nonzero_groups),)
+    temp=np.sum((uu_m_n.transpose()/ss_n),axis=1).transpose()
+    brac2 = np.tile(temp,(numb_compounds,1))
+
+    summation2 = xx_weird_i_n-omega_i[:,None]+brac1-brac2
+
+    Ln_gamma_i_R = np.sum(np.prod([q_k_i_np,summation2],axis=0),axis=1)
+
+    Ln_gamma_i_SR = Ln_gamma_i_R + Ln_gamma_i_C
+
+    return Ln_gamma_i_SR
+    
+
+
 def aiomfac_sr_quick_test(abundance,persistent_dict, temperature,organic_compounds, inorganic_ions):    
     
     non_zero_groups_list=persistent_dict['non_zero_groups_list']
@@ -1810,7 +1866,7 @@ def aiomfac_mr_persistent(organic_compounds, inorganic_ions, temperature,species
     
     return persistant_data
     
-def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,temperature,organic_compounds_act,Inorganic_ions):
+def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,temperature):
     #This function relies on the provision of persistent variables and uses numpy operation wherever possible.
     
     

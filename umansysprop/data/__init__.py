@@ -18,7 +18,7 @@ except ImportError:
 
 
 import re
-
+import pdb 
 import pybel
 import pkg_resources as pkg
 
@@ -27,7 +27,8 @@ def smarts(s):
     if not isinstance(s, bytes):
         s = s.encode('ascii')
     try:
-        return pybel.Smarts(s)
+        #pdb.set_trace()
+        return pybel.Smarts(str(s,'utf-8'))
     except IOError as e:
         # Convert pybel's IOError (?!) into a ValueError
         raise ValueError(str(e))

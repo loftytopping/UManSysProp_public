@@ -389,7 +389,7 @@ def aiomfac_sr_quick(abundance,persistent_dict, temperature):
     numb_nonzero_groups=len(non_zero_groups_list)
     numb_compounds=len(abundance)    
     
-    total_abundance = sum(value for key, value in list_compounds.iteritems())
+    #total_abundance = sum(value for key, value in list_compounds.iteritems())
 
     x_i=abundance/(np.sum(abundance))
 
@@ -1924,7 +1924,7 @@ def aiomfac_mr_quick(abundance_array,persistent_data,cation_index,anion_index,te
         temp=np.exp(-1.0*b3_ca_temp_persistent*(np.power(Ionic_strength,0.5)))
         Bca_persistent=b1_ca_temp_persistent+np.multiply(b2_ca_temp_persistent,temp)
         
-        pdb.set_trace()
+        #pdb.set_trace()
 
         temp=(np.exp(-1.0*b3_ca_temp_persistent*np.power(Ionic_strength,0.5)))
         temp2=np.multiply(b3_ca_temp_persistent,np.power(Ionic_strength,-0.5)*temp)

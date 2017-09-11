@@ -34,6 +34,7 @@ from . import data
 from . import groups
 from . import activity_coefficient_models as aiomfac
 from .forms import smiles
+import numpy as np
 
 class PartitioningIterationLimit(Warning):
     """
@@ -67,7 +68,7 @@ class IdealPartitioning(object):
         self.activity = None
 
     def update(self, coa, coefficient):
-        self.activity_coefficient=coefficient
+        self.activity_coefficient=np.clip(coefficient, 1.0e-3, 10000.0)
         self.condensed_abundance = ((1 + self.c_i_star*self.activity_coefficient / coa) ** -1) * self.abundance * (1e12 / 6.023e23)
         self.activity = self.activity_coefficient * (self.condensed_abundance / coa)
 

@@ -41,7 +41,7 @@ from collections import namedtuple
 
 import pybel
 from flask import request
-from flask.ext.wtf import Form as DeclarativeForm
+from flask_wtf import Form as DeclarativeForm
 from wtforms.fields import (
     Field,
     BooleanField,

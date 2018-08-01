@@ -38,7 +38,7 @@ from functools import wraps
 #-------------------------------------------------
 #Development only - not kept in standard release
 import pdb
-import cPickle
+#import cPickle
 import os.path
 import uuid
 import weakref

@@ -20,7 +20,7 @@ Ultimately, we aim to generate a user community around UManSysProp. As we develo
 <br />
 [Topping, D., Barley, M., Bane, M. K., Higham, N., Aumont, B., Dingle, N., and McFiggans, G.: UManSysProp v1.0: an online and open-source facility for molecular property prediction and atmospheric aerosol calculations, Geosci. Model Dev., 9, 899-914, doi:10.5194/gmd-9-899-2016, 2016.](http://www.geosci-model-dev.net/9/899/2016/)
 <br />
-Code DOI [![DOI](https://zenodo.org/badge/20123/loftytopping/UManSysProp_public.svg)](https://zenodo.org/badge/latestdoi/20123/loftytopping/UManSysProp_public)
+Code DOI [![DOI](https://zenodo.org/badge/202727587.svg)](https://zenodo.org/badge/latestdoi/202727587)
 
 
 

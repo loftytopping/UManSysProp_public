@@ -31,7 +31,7 @@ from math import log, sqrt
 
 from . import data
 from . import groups
-
+import pdb
 
 def nannoolal(compound, temperature, boiling_point):
     result1 = groups.aggregate_matches(
@@ -146,7 +146,7 @@ def myrdal_and_yalkowsky(compound, temperature, boiling_point):
 
 def evaporation(compound, temperature):
     m = groups.evaporation(compound)
-
+    #pdb.set_trace()
     # Calculate the sum of Carbonyl-Like groups, and Hydrogen Bonding groups
     CL_groups = m['5'] + m['6'] + m['7']
     HB_groups = m['8'] + m['9'] + m['10'] + m['11']
@@ -216,3 +216,102 @@ def evaporation(compound, temperature):
 
     return A + (B / temperature ** 1.5)
 
+### evaporation2 is identical to evaportation with the exception of the
+### alcohol terms where the vinyl alcohol/enol term has been removed and
+### are treated as alkyl alcohols to better match the literature version
+### of EVAPORATION.
+### Changes from evaporation made by Petroc Shelley December 2018
+### Email address: petroc.shelley@manchester.ac.uk
+	
+def evaporation2(compound, temperature):
+    m = groups.evaporation2(compound)
+
+    # Calculate the sum of Carbonyl-Like groups, and Hydrogen Bonding groups
+    CL_groups = m['5'] + m['6'] + m['7']
+    HB_groups = m['8'] + m['9'] + m['10'] + m['11']
+    HB_CL_groups = CL_groups + HB_groups
+
+    if CL_groups > 1 or HB_groups > 1:
+        # A correction is required if the compound is a diacid with at least
+        # one extra HB or CL group
+        if m['9'] > 1 and HB_CL_groups > 2:
+            diacid_factor = 2.6 / HB_CL_groups
+        else:
+            diacid_factor = 1.0
+        # For molecules with 2 or more CL/HB groups (but not 1xCL + 1xHB), a
+        # more complex calculation for A is required. First, split the
+        # contribution to the A parameter into lin, CL, and HB. Note that group
+        # 12 can contribute to all three subsets.
+        A_lin = groups.aggregate_matches(
+            m, data.EVAPORATION2_A,
+            groups=('1', '2', '3', '4', '12lin')
+            )
+        # For the CL and HB contributions (if non-zero), the contribution is
+        # reduced by dividing through by the square root of the number of
+        # groups
+        try:
+            A_CL = groups.aggregate_matches(
+                    m, data.EVAPORATION2_A,
+                    groups=('5', '6', '7', '13', '16', '17', '18', '12CL')
+                    ) / sqrt(CL_groups)
+        except ZeroDivisionError:
+            A_CL = 0.0
+        try:
+            A_HB = groups.aggregate_matches(
+                    m, data.EVAPORATION2_A,
+                    groups=('8', '9', '10', '11', '14', '15', '19', '20', '12HB')
+                    ) / sqrt(HB_groups)
+        except ZeroDivisionError:
+            A_HB = 0.0
+
+        A = A_lin + (A_CL + A_HB) * diacid_factor
+
+        # The calculation of the B parameter also includes the diacid
+        # correction for the terms associated with CL and HB groups. Note that
+        # as this calculation stands it would give the wrong VP for a diacid
+        # with a further CL or HB group and then a nitrate group on a ring.
+        # This is because the contribution of group 12 to the B parameter is
+        # assumed to be due to HB or CL groups.
+        B_lin = groups.aggregate_matches(
+                m, data.EVAPORATION2_B,
+                groups=('1', '2', '3', '4')
+                )
+        B_CL_HB = groups.aggregate_matches(
+                m, data.EVAPORATION2_B,
+                groups=(
+                    '5', '6', '7', '8', '9', '10', '11', '12',
+                    '13', '14', '15', '16', '17', '18', '19', '20')
+                )
+        B = B_lin + B_CL_HB * diacid_factor
+
+    else:
+        # A simpler calculation can be used for monofunctionals and
+        # hydrocarbons
+        g = set(m.keys()) - {'12lin', '12CL', '12HB'}
+        A = groups.aggregate_matches(
+                m, data.EVAPORATION2_A, groups=g)
+        B = groups.aggregate_matches(
+                m, data.EVAPORATION_B, groups=g)
+
+    return A + (B / temperature ** 1.5)
+
+	
+### SIMPOL added by Petroc Shelley	January 2019
+### Email address: petroc.shelley@manchester.ac.uk
+def simpol(compound, temperature):
+    m = groups.simpol(compound)
+    
+    # equations to be implemented
+    #bk(T) = b1,k/T + b2,k + b3,k * T + b4,k * ln(T)
+    #Where bk(T) is the group contribution term of group k at temp T
+    #log10(Pl,i(T))= SUMk Vki bk(T)
+	#Where Pl,i(T) is the liquid vapour pressure in atm of compound i at
+    #temperature, T, Vki is the number of groups of type k in compound i
+    
+    b1 = groups.aggregate_matches(m, data.SIMPOL_1)
+    b2 = groups.aggregate_matches(m, data.SIMPOL_2)	
+    b3 = groups.aggregate_matches(m, data.SIMPOL_3)
+    b4 = groups.aggregate_matches(m, data.SIMPOL_4)
+    #pdb.set_trace()
+    bkT = b1 / temperature + b2 + b3 * temperature + b4 * log(temperature)
+    return bkT

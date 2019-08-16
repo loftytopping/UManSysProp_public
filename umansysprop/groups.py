@@ -34,6 +34,7 @@ except NameError:
 from math import ceil
 from itertools import chain, groupby
 from operator import itemgetter
+import pdb
 
 from . import data
 
@@ -734,8 +735,278 @@ def evaporation(compound):
     # Acid next to an ester        group 2003
     # Acid next to PAN             group 2004
     result['20'] = m[2001] + m[2002] + m[2003] + m[2004]
+    #pdb.set_trace()
     return result
+ 
+ 
+###evaporation2 is the same as evaporation accept the vinyl alcohol/enol term 
+###has been removed to better match the true evaporation method and not the MCM.
+### Edits done by Petroc Shelley December 2018
+### Email address: petroc.shelley@manchester.ac.uk
 
+def evaporation2(compound):
+    m = matches(data.EVAPORATION2_SMARTS, compound)
+    result = {}
+    result['1'] = 1
+    # Number of carbons (2) and "in-line" oxygen atoms in the compound. In-line
+    # oxygens belong to groups such as ethers, esters, and peroxides. For use
+    # with Gerard's compounds and other MCM derived datasets:- 5
+    # (Methylperoxynitrate) is mis-assigned. This is probably best treated as
+    # a Me group, an ether group, and a nitrate group.
+    #
+    # Ethers               group 201
+    # Esters               group 202
+    # Peroxides            group 203
+    # Methylperoxynitrate  group 7002
+    result['2'] = m[2] + m[201] + m[202] + (2 * m[203]) + m[7002]
+    # Topological index "t" = number of branching C's
+    #
+    # CX4 with 4 C-C bonds                      group 301
+    # CX4 with 3 C-C bonds                      group 302
+    # CX4 with 3 C-C bonds + 1 C-O bond-not OH  group 303
+    # CX4 with 2 C-C bonds + 1 C-O bond-not OH  group 304
+    # CX4 with 2 C-C bonds + 2 C-O bond-not OH  group 305
+    # CX4 with 1 C-C bonds + 2 C-O bond-not OH  group 306
+    #
+    # Also need to determine the number of rings. If this is an integer, then
+    # unfused rings. If non-integer, then fused rings, the most common being
+    # 2 fused rings
+    #
+    # 3-membered rings  group 307
+    # 4-membered rings  group 308
+    # 5-membered rings  group 309
+    # 6-membered rings  group 310
+    # 7-membered rings  group 311
+    # 8-membered rings  group 312
+    result['3'] = (
+            2 * (m[301] + m[303] + m[305]) +
+            (m[302] + m[304] + m[306]) -
+            (
+                m[307] / 3 + m[308] / 4 + m[309] / 5 +
+                m[310] / 6 + m[311] / 7 + m[312] / 8)
+            )
+    # Nitrate groups. See notes above (in-line oxygen) regarding
+    # Methylperoxynitrate.
+    result['4'] = m[4] + m[7002]
+    # Number of aldehyde and ketone groups.  For use with Gerard's compounds
+    # and other MCM derived datasets:- 1288 (Formaldehyde) is mis-assigned
+    #
+    # Ketones in a chain     group 501
+    # Ketones in a ring      group 502
+    # Aldehydes              group 503
+    # Formaldehyde           group 7001
+    result['5'] = m[501] + m[502] + m[503] + m[7001]
+    # Number of ester groups
+    #
+    # Esters in a chain     group 601
+    # Esters in a ring      group 602
+    result['6'] = m[601] + m[602]
+    # Number of PAN groups
+    result['7'] = m[7]
+    # Alcohols
+    #
+    # Primary alcohols    group 801
+    # Secondary alcohols  group 802
+    # Tertiary alcohols   group 803
+	# Vinyl alcohols treated as primary alcohols(alcohols that would be 
+	# primary if C=C bond wasn't present) group 804 
+	# Vinyl alcohols treated as secondary alcohols (alcohols that would
+	#be secondary if C=C wasn't present) group 805
+    result['8'] = m[801] + m[802] + m[803] + m[804] + m[805]
+    # Acid groups
+    result['9'] = m[9]
+    # Hydroperoxide groups
+    result['10'] = m[10]
+    # Peroxyacid groups
+    result['11'] = m[11]
+    # Correction for groups within (or attached to) a ring
+    #
+    # Ketone in a ring                              group 502
+    # Esters in a ring                              group 602
+    # Ethers in a ring                              group 1201
+    # Peroxide in a ring                            group 1202
+    # Alcohol attached to a carbon in a ring        group 1203
+    # Nitrate attached to a carbon in a ring        group 1204
+    # Hydroperoxide attached to a carbon in a ring  group 1205
+    result['12'] = (
+            m[502] + m[602] + m[1201] + m[1202] +
+            m[1203] + m[1204] + m[1205])
+    # Ring corrections also need to be split between Lin, Carbonyl-Like, and
+    # Hydrogen Bonding types of functional group
+    result['12lin'] = m[1201] + m[1202] + m[1204]
+    result['12CL'] = m[1202] + m[502]
+    result['12HB'] = m[1203] + m[1205]
+    # Aldehyde or ketone conjugated to C=C
+    result['13'] = m[13]
+    # Correction for the type of alcohol. Primary and primary like vinyl alcohols don't have
+    # a correction. Just need to identify secondary (group 802), tertiary
+    # (group 803) and secondary like vinyl (group 805)
+    result['14'] = m[802] + (2 * m[803]) + m[805]
+    # Alcohol beta to a double bond (HO-CX4-C=c-). Limit this to 0 or 1
+    result['15'] = min(1, m[15])
+    # Ketone/aldehyde next to (i.e. O=C-C=O) a carbonyl containing group (ester
+    # or PAN as well as ketone/aldehyde)
+    #
+    # Ketone/aldehyde next to an aldehyde  group 1601
+    # Ketone/aldehyde next to a ketone     group 1602
+    # Ketone/aldehyde next to an ester     group 1603
+    # Ketone/aldehyde next to PAN          group 1604
+    result['16'] = m[1601] + m[1602] + m[1603] + m[1604]
+    # Ketone/aldehyde beta to (i.e. O=C-CX4-C=O) a carbonyl containing group
+    # (ester or PAN as well as ketone/aldehyde)
+    #
+    # Ketone/aldehyde beta to an aldehyde  group 1701
+    # Ketone/aldehyde beta to a ketone     group 1702
+    # Ketone/aldehyde beta to an ester     group 1703
+    # Ketone/aldehyde beta to a PAN        group 1704
+    result['17'] = m[1701] + m[1702] + m[1703] + m[1704]
+    # Identify features in which an aldehyde or ketone group is next to a C
+    # atom bearing a non-CL group (alcohol, nitrate, hydroperoxide)
+    #
+    # Aldehyde or ketone next to a nitrate or hydroperoxide   group 1801
+    # Aldehyde or ketone next to an alcohol                   group 1802
+    result['18'] = m[1801] + m[1802]
+    # Identify all features in which an alcohol is next to a functional
+    # group (or a C atom bearing a functional group)
+    #
+    # Alcohol next to hydroperoxide or nitrate (e.g. OCCOO)  group 1901
+    # Alcohol next to an alcohol (e.g. OCCO)                 group 1902
+	# 1902 edited from EVAP method to account for the possibility of one
+	# of the COH being a part of an enol group [CX4,CX3] used instead of
+	# [CX4]
+    # Alcohol next to an aldehyde (e.g. OCC=O)               group 1903
+    # Alcohol next to a ketone (e.g. OCC(=O)CC)              group 1904
+    # Alcohol next to an acid (e.g. OCC(=O)O)                group 1905
+    # Alcohol next to an ester (e.g. OCC(=O)OCC)             group 1906
+    # Alcohol next to a peroxyacid                           group 1907
+    # Alcohol next to a PAN                                  group 1908
+    result['19'] = (
+            m[1901] + (2 * m[1902]) + m[1903] + m[1904] +
+            m[1905] + m[1906] + m[1907] + m[1908])
+    # Identify all features in which an acid group is next to a C atom bearing
+    # a CL group (aldehyde, ketone, ester, and PAN)
+    #
+    # Acid next to an aldehyde     group 2001
+    # Acid next to a ketone        group 2002
+    # Acid next to an ester        group 2003
+    # Acid next to PAN             group 2004
+    result['20'] = m[2001] + m[2002] + m[2003] + m[2004]
+    return result
+	
+### SIMPOL added by Petroc Shelley January 2019
+### Email address: petroc.shelley@manchester.ac.uk
+	
+def simpol(compound):
+    m = matches(data.SIMPOL_SMARTS, compound)
+    result = {}
+    #Zeroth group (constant term used in all calculations)
+    result['0'] = 1
+    #total number of carbons present
+    result['1'] = m[1]
+    #number of carbons on acid side of amide bond
+    result['2'] = m[2]
+    #Aromatic ring present
+    #for one ring contribution is one. A ring containing 3 atoms will give answer of 3 therefore
+    #must be divided by 3 to give the correct contribution
+    #m[301] for 3 membered rings
+    #m[302] for 4 membered rings
+    #up to m[306] for 8 membered rings
+    #ceil function used to compensate for fused rings
+    result['3'] =   ceil(
+                        m[301] / 3 + m[302] / 4 + m[303] / 5
+                        + m[304] / 6 + m[305] / 7 + m[306] / 8
+                    )
+    #Aliphatic ring present
+    #same theory as result['3']
+    result['4'] = 	ceil(
+                        m[401] / 3 + m[402] / 4 + m[403] / 5
+                        + m[404] / 6 + m[405] / 7 + m[406] / 8
+                    )
+    #total number of non aromatic C=C bonds present
+    result['5'] = m[5]
+    #total number of C=C-C=O present in a non-aromatic ring
+    result['6'] = m[6]
+    #total number of hydroxyl groups not attached to aromatic carbon. Also described as alkyl hydroxyl
+    #which is OH attached to a CX4 which is the current SMART used. may be incorrect use of term alkyl
+    #when non-aromatic is meant.
+    result['7'] = m[7]
+    #total number of aldehyde groups present
+    result['8'] = m[8]
+    #total number of ketone groups present
+    result['9'] = m[9]
+    #total number of carboxylic acid groups present
+    result['10'] = m[10]
+    #total number of ester groups present UNLESS there is a nitro group bonded to the acid side carbon
+    #chain of the ester. In that case result['30'] would be used.
+    result['11'] = m[11]
+    #total number of ether groups where both carbons attached to the oxygen are not part of an aromatic
+    #ring system and the oxygen is not part of any ring system
+    result['12'] = m[12]
+    #total number of ether groups the oxygen of the ether is a part of an aliphatic ring (aliphatic
+    #ether
+    result['13'] = m[13]
+    #total number of ether groups not covered by result['12'] or result['13']. At least one of the
+    #carbons attached to the ether oxygen should be part of an aromatic system.
+    result['14'] = m[14]
+    #total number of nitrate groups present
+    result['15'] = m[15]
+    #total number of nitro groups present
+    #1601 is nitro represented as -N(=O)=O
+    #1602 is nitro represented as -[N+](=O)[O-]
+    result['16'] = m[1601] + m[1602]
+    #total number of aromatic hydroxyl groups present unless there is a nitro group bonded to the aromatic
+    #ring
+    #divided by 2 as each OH counted twice. Both ways around ring
+    result['17'] = m[17] / 2
+    #total number of primary amine groups where C bonded to N is not aromatic.
+    result['18'] = m[18]
+    #total number of secondary amine groups where both C bonded to N are not aromatic
+    result['19'] = m[19]
+    #total number of tertiary amine groups where all C bonded to N are not aromatic.
+    result['20'] = m[20]
+    #total number of amines where at least one C bonded to N is aromatic.
+    result['21'] = m[21]
+    #total number of primary amide groups present
+    result['22'] = m[22]
+    #total number of secondary amide groups present
+    result['23'] = m[23]
+    #total number of tertiary amide groups present
+    result['24'] = m[24]
+    #Conditional term to prevent result[2] activiating for non-amide compounds
+    if result['22']+result['23']+result['24'] == 0:
+        result['2'] = 0
+    #total number of peroxyacyl nitrate groups present
+    #2501 is the nitrate part represented as ON(=O)=O
+    #2502 is the nitrate part represented as O[N+](=O)[O-]
+    result['25'] = m[2501] + m[2502]
+    #total number of peroxide groups present. Notes in the SIMPOL paper imply C-O-O-C is what is meant
+    #(so this is what the SMART searches for) as opposed to just O-O
+    result['26'] = m[26]
+    #total number of hydroperoxide groups present
+    result['27'] = m[27]
+    #total number of peroxy acid groups present
+    result['28'] = m[28]
+    #total number of nitrophenol groups present
+    #group 2901 is for nitrophenol represented as -N(=O)=O where the nitro group is ortho to -OH
+    #group 2902 is for nitrophenol represented as -N(=O)=O where the nitro group is meta to -OH
+    #group 2903 is for nitrophenol represented as -N(=O)=O where the nitro group is para to -OH
+    #divided by 2 as para is counted both ways around the ring
+    #group 2904 is for nitrophenol represented as -[N+](=O)[O-] where the nitro group is ortho to -OH
+    #group 2905 is for nitrophenol represented as -[N+](=O)[O-] where the nitro group is meta to -OH
+    #group 2906 is for nitrophenol represented as -[N+](=O)[O-] where the nitro group is para to -OH
+    #divided by 2 as para is counted both ways around the ring
+    result['29'] = m[2901] + m[2902] + m[2903] / 2 + m[2904] + m[2905] +m[2906] / 2
+    if result['29'] > 0:
+        result['17'] = 0
+    #total number of nitroester groups present
+    #group 3001 is for the nitro part represented as -N(=O)=O
+    #group 3002 is for the nitro part represented as -[N+](=O)[O-]
+    result['30'] = m[3001] + m[3002]
+    if result['30'] > 0:
+        result['11'] = 0
+    #pdb.set_trace()
+    return result
+	
 
 def girolami(compound):
     m = matches(data.GIROLAMI_SMARTS, compound)

@@ -255,19 +255,22 @@ def composition(compound):
         ))
     return result
 
-
+###Updated for nitro representation by Petroc Shelley 21/09/2020
 def stein_and_brown(compound):
     m = matches(data.STEIN_AND_BROWN_SMARTS, compound)
-    # Copy groups 1-106
+    # Copy groups 1-108
+    # Added 107 and 108 as alternative representation of nitro and nitrate ( N(=O)=O vs [N+](=O)[O-] )
+    # 107 is alternate form of 54. 108 alterate form of 101. 109 alternate form of 106. -  Petroc Shelley 21/09/2020
     result = {
         group: count
         for (group, count) in m.items()
-        if 1 <= group <= 106
+        if 1 <= group <= 109
         }
     # Sum groups starting with CH< (non-ring)
     result[3] += m[704]
     # Sum ethers (non-ring)
-    result[23] += m[700]
+    # 7001 alterate form of 700. -  Petroc Shelley 21/09/2020
+    result[23] += m[700] + m[7001]
     # Sum ethers (ring)
     result[24] += m[306] + m[305]
     # Sum aldehydes
@@ -284,12 +287,13 @@ def stein_and_brown(compound):
     # Sum carboxylic acids
     result[31] += m[701]
     # Sum nitrate count
-    result[101] += m[700]
+    # 7001 alterate form of 700. -  Petroc Shelley 21/09/2020
+    result[101] += m[700] + m[7001]
     # Sum vinyl chloride count
     result[103] += m[304] + (2 * m[703]) + m[706]
     return result
 
-
+###Updated for nitro representation by Petroc Shelley 21/09/2020
 def nannoolal_primary(compound):
     comp = composition(compound)
     m = matches(data.NANNOOLAL_SMARTS_PRIMARY, compound)
@@ -428,12 +432,15 @@ def nannoolal_primary(compound):
     # 65: Aromatic ethers; used in result[38] above
     # 66..67: Aromatic nitrogens in piperidine and pyridine; not relevant to MCM
     # Aliphatic nitro group
-    result[68] = m[68]
+    # Added m[681] as alternative nitro SMART N(=O)=O vs [N+](=O)[O-] - Petroc Shelley 21/09/2020
+    result[68] = m[68] + m[681]
     # Aromatic nitro group
-    result[69] = m[69]
+    # Added m[691] as alternative nitro SMART N(=O)=O vs [N+](=O)[O-] - Petroc Shelley 21/09/2020
+    result[69] = m[69] + m[691]
     # 70..71: Silicon containing groups; not relevant to MCM
     # Nitrate group
-    result[72] = m[72] + m[7002]
+    # Added m[721] and m[70021] as alternative nitrate SMART ON(=O)=O vs O[N+](=O)[O-] - Petroc Shelley 21/09/2020
+    result[72] = m[72] + m[7002] + m[721] +m[70021] 
     # 73: Phosphorus; not relevant to MCM
     # 74..75: Nitrogen (nitrites and oximes); not relevant to MCM
     # Acid anhydride
@@ -501,7 +508,8 @@ def nannoolal_primary(compound):
     # Peroxyacids
     result[302] = m[302]
     # PAN
-    result[303] = m[303]
+    # Added m[3031] as alternative nitrate SMART ON(=O)=O vs O[N+](=O)[O-] - Petroc Shelley 21/09/2020  
+    result[303] = m[303] + m[3031]
     return result
 
 

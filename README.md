@@ -1,3 +1,6 @@
+> [!WARNING]  
+> UManSysProp is in the process of transitioning to a new project and suite of tools and will become a legacy project. When appropriatem, links will be made available here. 
+
 # UManSysProp_public
 This repository presents the source code for predictive techniques available in the UManSysProp facility.  Please note these files alone will not enable you to run your own version of the UManSysProp server as demonstrated by our website. Rather, the files provided here are to enable you to call our functions from your own Python modules. To run your own server, please download the approproate package from https://github.com/waveform80/umansysprop and then insert the files and folders provided here within the umansysprop sub-directory.
 

@@ -19,7 +19,7 @@ except ImportError:
 
 import re
 import pdb 
-import pybel
+from openbabel import pybel
 import pkg_resources as pkg
 
 

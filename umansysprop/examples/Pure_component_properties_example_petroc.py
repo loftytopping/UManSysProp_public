@@ -42,7 +42,7 @@
 # Last modification 21/12/16
 
 import glob
-import pybel
+from openbabel import pybel
 import collections
 import sys
 # Here you will need to put the relevant path in for your UManSysProp distribution. Mine is
@@ -74,7 +74,7 @@ for filename in onlyfiles: # If you have more than one file, for whatever reason
 
    SMILES_flag=0
    filenames.append(filename[:])
-   text=open(filename[:],'rU')
+   text=open(filename[:],'r')
    
    for line in text:
        input = line.split()

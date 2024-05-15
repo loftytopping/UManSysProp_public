@@ -1,0 +1,9 @@
+name: UManSysProp
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - openbabel
+  - anaconda::flask-wtf
+  - anaconda::wtforms
+prefix: /Users/user/opt/anaconda3/envs/UManSysProp

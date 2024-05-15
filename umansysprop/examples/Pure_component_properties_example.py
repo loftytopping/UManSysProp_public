@@ -42,12 +42,12 @@
 # Last modification 21/12/16
 
 import glob
-import pybel
+from openbabel import pybel
 import collections
 import sys
 # Here you will need to put the relevant path in for your UManSysProp distribution. Mine is
 # given as an example  - change this!
-sys.path.append('/home/david/Documents/Python/Git_repo_UManSysProp_public/UManSysProp_public/')
+sys.path.append('/Users/user/Documents/GitHub/UManSysProp_public/')
 from umansysprop import boiling_points
 from umansysprop import vapour_pressures
 from umansysprop import critical_properties
@@ -74,15 +74,15 @@ for filename in onlyfiles: # If you have more than one file, for whatever reason
 
    SMILES_flag=0
    filenames.append(filename[:])
-   text=open(filename[:],'rU')
+   text=open(filename[:],'r')
    
-   for line in text.xreadlines():
+   for line in text.readlines():
        input = line.split()
        # Keep a list of the information
        Compound_reference.append(input[0])
        smiles_array.append(input[1])
        # Now create Pybel objects which are used in all property predictive techniquexs
-       Pybel_object=pybel.readstring(b'smi',input[1])
+       Pybel_object=pybel.readstring('smi',input[1])
        Pybel_object_dict[input[1]]=Pybel_object
        
 ##########################################################################################       
